@@ -3,89 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control de Remedios</title>
+  <title>Control de Remedios 💊</title>
 
-  <!-- Librería oficial de Supabase -->
+  <!-- Librería de Supabase y Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+    }
+
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background-color: #f4f6f8;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px 15px;
+      display: flex;
+      justify-content: center;
     }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
     .card {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 25px 20px;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      margin-bottom: 20px;
     }
+
+    .icon-box {
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); }
+      100% { transform: scale(1); }
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.5rem;
+      color: var(--text);
+    }
+
     .status {
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-top: 15px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
-    .exito { color: #2e7d32; }
-    .normal { color: #1565c0; }
-    
-    /* Lista de tomas */
-    .historial {
-      margin-top: 25px;
-      text-align: left;
+
+    .exito { color: var(--success); }
+    .normal { color: var(--primary); }
+
+    .detalle {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin: 0;
     }
-    .historial h3 {
+
+    /* Estado de Hoy */
+    .banner-estado {
+      padding: 12px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .completado { background-color: #dcfce7; color: #15803d; }
+    .pendiente { background-color: #fef2f2; color: #b91c1c; }
+
+    /* Historial */
+    .historial-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 5px;
+    }
+
+    .historial-header h3 {
       font-size: 1rem;
-      color: #555;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 8px;
+      color: #475569;
+      margin: 0;
     }
+
     .lista-tomas {
       list-style: none;
       padding: 0;
       margin: 0;
     }
+
     .toma-item {
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      background: var(--card-bg);
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.95rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
-    .fecha {
+
+    .toma-item:first-child {
+      border: 2px solid #bbf7d0;
+    }
+
+    .fecha-tag {
       font-weight: 600;
-      color: #2e7d32;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .hora {
-      color: #666;
+
+    .hora-tag {
+      color: #64748b;
       font-size: 0.85rem;
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>Control de Remedios 💊</h2>
-    <div id="mensaje" class="status normal">Cargando información...</div>
-    <p id="detalle"></p>
+  <div class="container">
+    
+    <!-- Tarjeta Principal -->
+    <div class="card">
+      <div id="icono" class="icon-box">💊</div>
+      <h2 id="titulo">Control de Remedios</h2>
+      <div id="mensaje" class="status normal">Cargando...</div>
+      <p id="detalle" class="detalle"></p>
+    </div>
 
-    <!-- Contenedor donde se mostrarán las tomas anteriores -->
-    <div id="seccion-historial" class="historial" style="display: none;">
-      <h3>📋 Últimas tomas registradas:</h3>
+    <!-- Sección de Historial para ti -->
+    <div id="seccion-historial" style="display: none;">
+      
+      <!-- Banner de estado diario -->
+      <div id="banner-hoy" class="banner-estado pendiente">
+        ⏳ Verificando la toma de hoy...
+      </div>
+
+      <div class="historial-header">
+        <h3>📋 Registro de Tomas</h3>
+      </div>
+
       <ul id="lista" class="lista-tomas">
-        <li>Cargando historial...</li>
+        <li style="text-align: center; color: #94a3b8; padding: 20px;">Cargando historial...</li>
       </ul>
     </div>
+
   </div>
 
   <script>
-    // Configuración de Supabase
     const SUPABASE_URL = 'https://cajtmasncuswlmupjrqe.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_uldRavgakeaFmZ4JbdBHcw_0of6g83J';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -95,9 +183,9 @@
     async function cargarHistorial() {
       const seccionHistorial = document.getElementById('seccion-historial');
       const listaEl = document.getElementById('lista');
+      const bannerHoy = document.getElementById('banner-hoy');
       seccionHistorial.style.display = 'block';
 
-      // Pedir las últimas 10 tomas a Supabase
       const { data, error } = await db
         .from('tomas_remedios')
         .select('*')
@@ -105,35 +193,48 @@
         .limit(10);
 
       if (error) {
-        listaEl.innerHTML = '<li>Error al cargar el historial</li>';
+        listaEl.innerHTML = '<li class="toma-item">Error al cargar historial</li>';
         return;
       }
 
       if (!data || data.length === 0) {
-        listaEl.innerHTML = '<li>Aún no hay tomas registradas.</li>';
+        listaEl.innerHTML = '<li class="toma-item">Aún no hay tomas registradas.</li>';
+        bannerHoy.className = "banner-estado pendiente";
+        bannerHoy.innerHTML = "⚠️ Aún no hay tomas registradas";
         return;
       }
 
-      listaEl.innerHTML = '';
-
-      // Fechas de referencia para comparar (Hoy y Ayer)
       const ahora = new Date();
       const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
       const ayer = new Date(hoy);
       ayer.setDate(ayer.getDate() - 1);
 
+      // Verificar si ya tomó remedio hoy
+      const tomoHoy = data.some(toma => {
+        const f = new Date(toma.created_at);
+        const fSinHora = new Date(f.getFullYear(), f.getMonth(), f.getDate());
+        return fSinHora.getTime() === hoy.getTime();
+      });
+
+      if (tomoHoy) {
+        bannerHoy.className = "banner-estado completado";
+        bannerHoy.innerHTML = "🎉 ¡Remedio de hoy completado!";
+      } else {
+        bannerHoy.className = "banner-estado pendiente";
+        bannerHoy.innerHTML = "⏰ Pendiente: Aún no registra toma hoy";
+      }
+
+      listaEl.innerHTML = '';
       data.forEach(toma => {
         const fechaObj = new Date(toma.created_at);
         const fechaSinHora = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate());
 
-        // Determinar el título según la fecha
         let etiquetaRemedio = 'Remedio';
         if (fechaSinHora.getTime() === hoy.getTime()) {
           etiquetaRemedio = 'Remedio Hoy';
         } else if (fechaSinHora.getTime() === ayer.getTime()) {
           etiquetaRemedio = 'Remedio Ayer';
         } else {
-          // Si es más viejo, muestra día/mes (ej: 21/07)
           const dia = String(fechaObj.getDate()).padStart(2, '0');
           const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
           etiquetaRemedio = `Remedio ${dia}/${mes}`;
@@ -144,8 +245,8 @@
         const li = document.createElement('li');
         li.className = 'toma-item';
         li.innerHTML = `
-          <span class="fecha">✅ ${etiquetaRemedio}</span>
-          <span class="hora">${horaTxt} hs</span>
+          <span class="fecha-tag">✅ ${etiquetaRemedio}</span>
+          <span class="hora-tag">${horaTxt} hs</span>
         `;
         listaEl.appendChild(li);
       });
@@ -156,9 +257,9 @@
       const clave = urlParams.get('clave');
       const mensajeEl = document.getElementById('mensaje');
       const detalleEl = document.getElementById('detalle');
+      const iconoEl = document.getElementById('icono');
 
       if (clave === CLAVE_NFC_VALIDA) {
-        // Si viene desde el NFC -> Registra y muestra confirmación
         mensajeEl.textContent = "⏳ Registrando la toma...";
         
         const { error } = await db
@@ -166,17 +267,26 @@
           .insert([{ medicamento: 'Remedio Mañana' }]);
 
         if (error) {
-          mensajeEl.textContent = "❌ Error al registrar";
+          iconoEl.textContent = "❌";
+          mensajeEl.textContent = "Error al registrar";
           detalleEl.textContent = error.message;
         } else {
+          iconoEl.textContent = "💖";
           mensajeEl.className = "status exito";
-          mensajeEl.textContent = "¡Remedio registrado con éxito!✅";
-          detalleEl.textContent = "💕Te amo mamita bella💕.";
+          mensajeEl.textContent = "¡Remedio registrado con éxito!";
+          detalleEl.textContent = "💕Te amo mamita bella💕";
+
+          // Tirar confeti de celebración
+          confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { y: 0.6 }
+          });
         }
       } else {
-        // Si abres el enlace normal -> Muestra la lista de registros
-        mensajeEl.textContent = "ℹ️ Historial de Tomas";
-        detalleEl.textContent = "ㅤ";
+        iconoEl.textContent = "📋";
+        mensajeEl.textContent = "Historial de Tomas";
+        detalleEl.textContent = "Estado actual del remedio:";
         cargarHistorial();
       }
     }
