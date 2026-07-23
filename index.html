@@ -115,17 +115,37 @@
       }
 
       listaEl.innerHTML = '';
+
+      // Fechas de referencia para comparar (Hoy y Ayer)
+      const ahora = new Date();
+      const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+      const ayer = new Date(hoy);
+      ayer.setDate(ayer.getDate() - 1);
+
       data.forEach(toma => {
-        // Formatear la fecha a hora local
         const fechaObj = new Date(toma.created_at);
-        const fechaTxt = fechaObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const fechaSinHora = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate());
+
+        // Determinar el título según la fecha
+        let etiquetaRemedio = 'Remedio';
+        if (fechaSinHora.getTime() === hoy.getTime()) {
+          etiquetaRemedio = 'Remedio Hoy';
+        } else if (fechaSinHora.getTime() === ayer.getTime()) {
+          etiquetaRemedio = 'Remedio Ayer';
+        } else {
+          // Si es más viejo, muestra día/mes (ej: 21/07)
+          const dia = String(fechaObj.getDate()).padStart(2, '0');
+          const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+          etiquetaRemedio = `Remedio ${dia}/${mes}`;
+        }
+
         const horaTxt = fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
         const li = document.createElement('li');
         li.className = 'toma-item';
         li.innerHTML = `
-          <span class="fecha">✅ ${toma.medicamento || 'Remedio'}</span>
-          <span class="hora">${fechaTxt} - ${horaTxt} hs</span>
+          <span class="fecha">✅ ${etiquetaRemedio}</span>
+          <span class="hora">${horaTxt} hs</span>
         `;
         listaEl.appendChild(li);
       });
