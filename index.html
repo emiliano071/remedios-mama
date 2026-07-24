@@ -11,21 +11,24 @@
 
   <style>
     :root {
-      --primary: #2563eb;
-      --success: #16a34a;
-      --bg: #f1f5f9;
-      --card-bg: #ffffff;
-      --text: #0f172a;
+      --primary: #007aff;
+      --success: #34c759;
+      --text: #1c1c1e;
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      min-height: 100vh;
       color: var(--text);
       margin: 0;
-      padding: 20px 15px;
+      padding: 30px 15px;
       display: flex;
       justify-content: center;
+      box-sizing: border-box;
     }
 
     .container {
@@ -33,35 +36,41 @@
       max-width: 420px;
     }
 
+    /* Estilo Liquid Glass Principal */
     .card {
-      background: var(--card-bg);
-      padding: 25px 20px;
-      border-radius: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 30px 20px;
+      border-radius: 28px;
+      box-shadow: var(--glass-shadow);
       text-align: center;
       margin-bottom: 20px;
     }
 
     .icon-box {
-      font-size: 3.5rem;
-      margin-bottom: 10px;
-      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-size: 3.8rem;
+      margin-bottom: 12px;
+      animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     @keyframes pop {
-      0% { transform: scale(0.5); }
-      100% { transform: scale(1); }
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
 
     h2 {
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
       font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
       color: var(--text);
     }
 
     .status {
       font-size: 1.15rem;
-      font-weight: 700;
+      font-weight: 600;
       margin-bottom: 8px;
     }
 
@@ -69,25 +78,37 @@
     .normal { color: var(--primary); }
 
     .detalle {
-      color: #64748b;
+      color: #555e6c;
       font-size: 0.95rem;
       margin: 0;
+      font-weight: 500;
     }
 
-    /* Estado de Hoy */
+    /* Banner Estado Hoy Liquid Glass */
     .banner-estado {
-      padding: 12px;
-      border-radius: 14px;
+      padding: 14px;
+      border-radius: 18px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
-    .completado { background-color: #dcfce7; color: #15803d; }
-    .pendiente { background-color: #fef2f2; color: #b91c1c; }
+
+    .completado {
+      background-color: rgba(52, 199, 89, 0.15);
+      color: #1b5e20;
+    }
+
+    .pendiente {
+      background-color: rgba(255, 59, 48, 0.12);
+      color: #900c3f;
+    }
 
     /* Historial */
     .historial-header {
@@ -95,12 +116,13 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
-      padding: 0 5px;
+      padding: 0 8px;
     }
 
     .historial-header h3 {
-      font-size: 1rem;
-      color: #475569;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #3a3a3c;
       margin: 0;
     }
 
@@ -111,18 +133,22 @@
     }
 
     .toma-item {
-      background: var(--card-bg);
-      padding: 14px 16px;
-      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 14px 18px;
+      border-radius: 20px;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
     }
 
     .toma-item:first-child {
-      border: 2px solid #bbf7d0;
+      border: 1.5 solid rgba(52, 199, 89, 0.6);
+      background: rgba(255, 255, 255, 0.75);
     }
 
     .fecha-tag {
@@ -134,11 +160,13 @@
     }
 
     .hora-tag {
-      color: #64748b;
+      color: #48484a;
       font-size: 0.85rem;
-      background: #f1f5f9;
-      padding: 4px 8px;
-      border-radius: 8px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 5px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
     }
   </style>
 </head>
@@ -146,7 +174,7 @@
 
   <div class="container">
     
-    <!-- Tarjeta Principal -->
+    <!-- Tarjeta Principal Liquid Glass -->
     <div class="card">
       <div id="icono" class="icon-box">💊</div>
       <h2 id="titulo">Control de Remedios</h2>
@@ -154,7 +182,7 @@
       <p id="detalle" class="detalle"></p>
     </div>
 
-    <!-- Sección de Historial para ti -->
+    <!-- Sección de Historial -->
     <div id="seccion-historial" style="display: none;">
       
       <!-- Banner de estado diario -->
@@ -167,7 +195,7 @@
       </div>
 
       <ul id="lista" class="lista-tomas">
-        <li style="text-align: center; color: #94a3b8; padding: 20px;">Cargando historial...</li>
+        <li style="text-align: center; color: #636366; padding: 20px;">Cargando historial...</li>
       </ul>
     </div>
 
