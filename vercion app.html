@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Remedios 💊</title>
+
+  <!-- Configuración para App Nativa de iOS (PWA) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Remedios">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/3d-fluency/512/pill.png">
+
+  <!-- Librería de Supabase y Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #007aff;
+      --success: #34c759;
+      --text: #1c1c1e;
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      min-height: 100vh;
+      color: var(--text);
+      margin: 0;
+      padding: 30px 15px;
+      display: flex;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Estilo Liquid Glass Principal */
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 30px 20px;
+      border-radius: 28px;
+      box-shadow: var(--glass-shadow);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .icon-box {
+      font-size: 3.8rem;
+      margin-bottom: 12px;
+      animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .status {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .exito { color: var(--success); }
+    .normal { color: var(--primary); }
+
+    .detalle {
+      color: #555e6c;
+      font-size: 0.95rem;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    /* Banner Estado Hoy Liquid Glass */
+    .banner-estado {
+      padding: 14px;
+      border-radius: 18px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .completado {
+      background-color: rgba(52, 199, 89, 0.15);
+      color: #1b5e20;
+    }
+
+    .pendiente {
+      background-color: rgba(255, 59, 48, 0.12);
+      color: #900c3f;
+    }
+
+    /* Historial */
+    .historial-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 8px;
+    }
+
+    .historial-header h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #3a3a3c;
+      margin: 0;
+    }
+
+    .lista-tomas {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toma-item {
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 14px 18px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .toma-item:first-child {
+      border: 1.5px solid rgba(52, 199, 89, 0.6);
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .fecha-tag {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hora-tag {
+      color: #48484a;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 5px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Tarjeta Principal Liquid Glass -->
+    <div class="card">
+      <div id="icono" class="icon-box">💊</div>
+      <h2 id="titulo">Control de Remedios</h2>
+      <div id="mensaje" class="status normal">Cargando...</div>
+      <p id="detalle" class="detalle"></p>
+    </div>
+
+    <!-- Sección de Historial -->
+    <div id="seccion-historial" style="display: none;">
+      
+      <!-- Banner de estado diario -->
+      <div id="banner-hoy" class="banner-estado pendiente">
+        ⏳ Verificando la toma de hoy...
+      </div>
+
+      <div class="historial-header">
+        <h3>📋 Registro de Tomas</h3>
+      </div>
+
+      <ul id="lista" class="lista-tomas">
+        <li style="text-align: center; color: #636366; padding: 20px;">Cargando historial...</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://cajtmasncuswlmupjrqe.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_uldRavgakeaFmZ4JbdBHcw_0of6g83J';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const CLAVE_NFC_VALIDA = 'TOMAR_REMEDIO_SECRET_123';
+
+    async function cargarHistorial() {
+      const seccionHistorial = document.getElementById('seccion-historial');
+      const listaEl = document.getElementById('lista');
+      const bannerHoy = document.getElementById('banner-hoy');
+      seccionHistorial.style.display = 'block';
+
+      const { data, error } = await db
+        .from('tomas_remedios')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        listaEl.innerHTML = '<li class="toma-item">Error al cargar historial</li>';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        listaEl.innerHTML = '<li class="toma-item">Aún no hay tomas registradas.</li>';
+        bannerHoy.className = "banner-estado pendiente";
+        bannerHoy.innerHTML = "⚠️ Aún no hay tomas registradas";
+        return;
+      }
+
+      const ahora = new Date();
+      const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+      const ayer = new Date(hoy);
+      ayer.setDate(ayer.getDate() - 1);
+
+      // Verificar si ya tomó remedio hoy
+      const tomoHoy = data.some(toma => {
+        const f = new Date(toma.created_at);
+        const fSinHora = new Date(f.getFullYear(), f.getMonth(), f.getDate());
+        return fSinHora.getTime() === hoy.getTime();
+      });
+
+      if (tomoHoy) {
+        bannerHoy.className = "banner-estado completado";
+        bannerHoy.innerHTML = "🎉 ¡Remedio de hoy completado!";
+      } else {
+        bannerHoy.className = "banner-estado pendiente";
+        bannerHoy.innerHTML = "⏰ Pendiente: Aún no registra toma hoy";
+      }
+
+      listaEl.innerHTML = '';
+      data.forEach(toma => {
+        const fechaObj = new Date(toma.created_at);
+        const fechaSinHora = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate());
+
+        let etiquetaRemedio = 'Remedio';
+        if (fechaSinHora.getTime() === hoy.getTime()) {
+          etiquetaRemedio = 'Remedio Hoy';
+        } else if (fechaSinHora.getTime() === ayer.getTime()) {
+          etiquetaRemedio = 'Remedio Ayer';
+        } else {
+          const dia = String(fechaObj.getDate()).padStart(2, '0');
+          const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+          etiquetaRemedio = `Remedio ${dia}/${mes}`;
+        }
+
+        const horaTxt = fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+        const li = document.createElement('li');
+        li.className = 'toma-item';
+        li.innerHTML = `
+          <span class="fecha-tag">✅ ${etiquetaRemedio}</span>
+          <span class="hora-tag">${horaTxt} hs</span>
+        `;
+        listaEl.appendChild(li);
+      });
+    }
+
+    async function iniciar() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const clave = urlParams.get('clave');
+      const mensajeEl = document.getElementById('mensaje');
+      const detalleEl = document.getElementById('detalle');
+      const iconoEl = document.getElementById('icono');
+
+      if (clave === CLAVE_NFC_VALIDA) {
+        mensajeEl.textContent = "⏳ Registrando la toma...";
+        
+        const { error } = await db
+          .from('tomas_remedios')
+          .insert([{ medicamento: 'Remedio Mañana' }]);
+
+        if (error) {
+          iconoEl.textContent = "❌";
+          mensajeEl.textContent = "Error al registrar";
+          detalleEl.textContent = error.message;
+        } else {
+          iconoEl.textContent = "💖";
+          mensajeEl.className = "status exito";
+          mensajeEl.textContent = "¡Remedio registrado con éxito!";
+          detalleEl.textContent = "💕Te amo mamita bella💕";
+
+          // Tirar confeti de celebración
+          confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { y: 0.6 }
+          });
+        }
+      } else {
+        iconoEl.textContent = "📋";
+        mensajeEl.textContent = "Historial de Tomas";
+        detalleEl.textContent = "Estado actual del remedio:";
+        cargarHistorial();
+      }
+    }
+
+    iniciar();
+  </script>
+</body>
+</html>
